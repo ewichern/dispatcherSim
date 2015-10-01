@@ -12,7 +12,8 @@ import junit.framework.TestSuite;
 public class ProcessTest extends TestCase {
 
 	private String name;
-	private byte priority;
+	private int priority;
+	private final int DEFAULT_PRIORITY = 2;
 	
 	protected void setUp () {
 		name = "processName";
@@ -39,11 +40,32 @@ public class ProcessTest extends TestCase {
 	
 	public void testConstructor() {
 //		fail ("Not written yet.");
-		Process proc = new Process();
-		assertFalse(proc == null);
+		Process process = new Process();
+		assertFalse(process == null);
+	}
+		
+	public void testNameConstructor() {
+		Process process = new Process(name);
+		assertFalse(process == null);
+		assertEquals(name, process.getName());
+		assertEquals(DEFAULT_PRIORITY, process.getPriority());
+		assertEquals(State.READY, process.getState());
 	}
 	
-	// TODO write tests for 4 constructors
+	public void testPriorityConstructor() {
+		Process process = new Process(priority);
+		assertFalse(process == null);
+		assertEquals(priority, process.getPriority());
+		assertEquals(State.READY, process.getState());
+	}
+	
+	public void testBothConstructor() {
+		Process process = new Process(name, priority);
+		assertFalse(process == null);
+		assertEquals(name, process.getName());
+		assertEquals(priority, process.getPriority());
+		assertEquals(State.READY, process.getState());
+	}
 	
 	// TODO write tests for getters/setters (once written)
 

@@ -12,7 +12,7 @@ package odu.edu.cs.ewichern.dispatcher;
  * <ul>
  * 
  * state is an enum with possible values RUNNING, READY, BLOCKED priority is a
- * byte value, where lower values == higher priority PID will be assigned
+ * int value, where lower values == higher priority PID will be assigned
  * automatically by a static class variable counter
  * 
  * @author Erik Wichern
@@ -21,7 +21,7 @@ package odu.edu.cs.ewichern.dispatcher;
 
 public class Process {
 
-	private byte priority = 2;
+	private int priority = 2;
 	private int PID;
 	private State state = State.READY;
 	private String name = "";
@@ -67,14 +67,14 @@ public class Process {
 	 * according to input (expected range is 0-2)
 	 * 
 	 * @param priorityInput
-	 *            byte providing a priority for the process
+	 *            int providing a priority for the process
 	 */
-	public Process(byte priorityInput) {
+	public Process(int priorityInput) {
 		processCount += 1;
 
 		PID = processCount;
 		name = "" + PID;
-		priority = priorityInput;
+		priority = (int)priorityInput;
 	}
 
 	/**
@@ -87,23 +87,23 @@ public class Process {
 	 * @param nameInput
 	 *            String to name the process
 	 * @param priorityInput
-	 *            byte providing a priority for the process
+	 *            int providing a priority for the process
 	 */
-	public Process(String nameInput, byte priorityInput) {
+	public Process(String nameInput, int priorityInput) {
 		processCount += 1;
 
 		PID = processCount;
 		name = nameInput;
-		priority = priorityInput;
+		priority = (int)priorityInput;
 	}
 
 	// TODO write getters and setters
-	public byte getPriority() {
+	public int getPriority() {
 		return priority;
 	}
 
 	// should not be able to change priority after instantiation
-	// public void setPriority( byte priorityInput ) {
+	// public void setPriority( int priorityInput ) {
 	// priority = priorityInput;
 	// }
 
@@ -137,6 +137,29 @@ public class Process {
 		return "Process [PID=" + PID + ", state=" + state + ", priority=" + priority + ", name=" + name + "]";
 	}
 
-	// for printing overload toString
-	// public toString()
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + PID;
+		result = prime * result + priority;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Process other = (Process) obj;
+		if (PID != other.PID)
+			return false;
+		if (priority != other.priority)
+			return false;
+		return true;
+	}
+
 }

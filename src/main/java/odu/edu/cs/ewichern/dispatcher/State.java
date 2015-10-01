@@ -9,5 +9,5 @@ package odu.edu.cs.ewichern.dispatcher;
  * @author Erik Wichern
  */
 public enum State {
-	READY, RUNNING, BLOCKED
+	READY, RUNNING, BLOCKED, TERMINATED
 }
