@@ -39,7 +39,7 @@ public class Process {
 		processCount += 1;
 
 		PID = processCount;
-		name = "" + PID;
+		name = "process_" + PID;
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class Process {
 		processCount += 1;
 
 		PID = processCount;
-		name = "" + PID;
+		name = "process_" + PID;
 		priority = (int)priorityInput;
 	}
 
@@ -89,7 +89,7 @@ public class Process {
 	 * @param priorityInput
 	 *            int providing a priority for the process
 	 */
-	public Process(String nameInput, int priorityInput) {
+	public Process(int priorityInput, String nameInput) {
 		processCount += 1;
 
 		PID = processCount;
@@ -130,6 +130,15 @@ public class Process {
 
 	public void setName(String nameInput) {
 		name = nameInput;
+	}
+	
+	public String[] stringArray() {
+		String[] output = new String[4];
+		output[0] = "PID = " + ((Integer)PID).toString();
+		output[1] = "State = " + state.toString();
+		output[2] = "Priority = " + ((Integer)priority).toString();
+		output[3] = "Name = " + name;
+		return output;
 	}
 
 	@Override

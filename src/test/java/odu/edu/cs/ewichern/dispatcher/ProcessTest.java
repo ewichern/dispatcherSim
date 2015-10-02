@@ -60,7 +60,7 @@ public class ProcessTest extends TestCase {
 	}
 	
 	public void testBothConstructor() {
-		Process process = new Process(name, priority);
+		Process process = new Process(priority, name);
 		assertFalse(process == null);
 		assertEquals(name, process.getName());
 		assertEquals(priority, process.getPriority());

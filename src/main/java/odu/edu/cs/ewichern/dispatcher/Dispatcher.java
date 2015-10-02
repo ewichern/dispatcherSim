@@ -1,18 +1,21 @@
 package odu.edu.cs.ewichern.dispatcher;
 
 import java.util.ArrayList;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class Dispatcher {
 
 	int maxPriority = 0;
+	private static final int MAX_PROCESSES = 99;
 
 	private ArrayList<ProcessQueue> priorityQueues = new ArrayList<ProcessQueue>();
 
-	// private ArrayList<Process> processList = new ArrayList<Process>();
+	private SortedMap<Integer, Process> processList = new TreeMap<Integer, Process>();
 	private ArrayList<Process> blockedList = new ArrayList<Process>();
 	private ArrayList<Process> terminatedList = new ArrayList<Process>();
 
-	private Process activeProcess;
+	private static Process activeProcess;
 
 	public Dispatcher() {
 		priorityQueues.add(new ProcessQueue(0));
@@ -43,6 +46,36 @@ public class Dispatcher {
 	
 	public Process getActiveProcess() {
 		return activeProcess;
+	}
+	
+	public Process getByPID(int PID) {
+		return processList.get(PID);
+	}
+	
+	public void createProcess(int priorityInput, String nameInput) {
+		Process temp;
+		
+		if (priorityInput >= 0 && priorityInput <= maxPriority) {
+			temp = priorityQueues.get(priorityInput).createProcess(nameInput);
+			processList.put(temp.getPID(), temp);
+		} else {
+			throw new IndexOutOfBoundsException("Invalid priority level.");
+		}
+		
+		runNextProcess();
+	}
+	
+	public void createProcess(int priorityInput) {
+		Process temp;
+		
+		if (priorityInput >= 0 && priorityInput <= maxPriority) {
+			temp = priorityQueues.get(priorityInput).createProcess();
+			processList.put(temp.getPID(), temp);
+		} else {
+			throw new IndexOutOfBoundsException("Invalid priority level.");
+		}
+		
+		runNextProcess();
 	}
 	
 	public boolean queueProcess(Process process) {

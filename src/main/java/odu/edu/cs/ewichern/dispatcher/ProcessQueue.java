@@ -1,6 +1,7 @@
 package odu.edu.cs.ewichern.dispatcher;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Queue;
 
@@ -17,9 +18,30 @@ public class ProcessQueue implements Iterable<Process>{
 	public ProcessQueue(int priorityInput) {
 		priority = (int)priorityInput;
 	}
+	
+	public ProcessQueue(Process[] arrayInput) {
+		priority = arrayInput[0].getPriority();
+		for (int i = 0; i < arrayInput.length; i++) {
+			addProcess(arrayInput[i]);
+		}
+	}
 
 	public int getPriority() {
 		return priority;
+	}
+	
+	public Process createProcess() {
+		Process newProcess = new Process(priority);
+		System.err.println("Created " + newProcess);
+		processQueue.add(newProcess);
+		return newProcess;
+	}
+
+	public Process createProcess(String nameInput) {
+		Process newProcess = new Process(priority, nameInput);
+		System.err.println("Created " + newProcess);
+		processQueue.add(newProcess);
+		return newProcess;
 	}
 
 	public boolean addProcess(Process process) {
@@ -52,6 +74,14 @@ public class ProcessQueue implements Iterable<Process>{
 	
 	public Iterator<Process> iterator() {
 		return processQueue.iterator();
+	}
+	
+	public ArrayList<String> stringArray() {
+		ArrayList<String> output = new ArrayList<String>();
+		for (Process proc : processQueue) {
+			output.add(proc.getPID() + " - " + proc.getName());
+		}
+		return output;
 	}
 	
 	public Object[] toArray() {
