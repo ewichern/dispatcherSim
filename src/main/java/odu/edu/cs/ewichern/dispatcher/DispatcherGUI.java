@@ -18,33 +18,43 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 public class DispatcherGUI extends Application {
 
 	GridPane grid = new GridPane();
-	private static int PRIORITY_LEVELS = 3;
+	private static int PRIORITY_LEVELS = 4;
 	private static int NUM_FILL_PROCESSESS = 3;
 	private static Dispatcher dispatcher = new Dispatcher(PRIORITY_LEVELS);
 	private static int maxPriority = dispatcher.getMaxPriority();
 	private static Object[] queueArray;
 	private static SortedMap<Integer, ListView<String>> queueViews = new TreeMap<Integer, ListView<String>>();
 	private static SortedMap<Integer, ObservableList<String>> queueLists = new TreeMap<Integer, ObservableList<String>>();
-	private static SortedMap<Integer, Label> queueLabels = new TreeMap<Integer, Label>();
+	private static SortedMap<Integer, Label> queueLabels1 = new TreeMap<Integer, Label>();
+	private static SortedMap<Integer, Label> queueLabels2 = new TreeMap<Integer, Label>();
 	private static SortedMap<Integer, VBox> queueBoxes = new TreeMap<Integer, VBox>();
 
-	private static Process selectedProcess;
-	private static ListView<String> selectedProcessView = new ListView<String>();
-	private static ObservableList<String> selectedProcessText = FXCollections.observableArrayList();
-	final Label selectedProcessLabel = new Label();
-	private static VBox selectedProcessBox = new VBox();
+	Process selectedProcess;
+	ListView<String> selectedProcessView = new ListView<String>();
+	ObservableList<String> selectedProcessList = FXCollections.observableArrayList();
+	Label selectedProcessLabel = new Label();
+	VBox selectedProcessBox = new VBox();
 
-	private static ListView<String> blockedView = new ListView<String>();
-	private static ObservableList<String> blockedList = FXCollections.observableArrayList();
-	final Label blockedLabel = new Label();
-	private static VBox blockedBox = new VBox();
+	Process runningProcess;
+	ListView<String> runningProcessView = new ListView<String>();
+	ObservableList<String> runningProcessList = FXCollections.observableArrayList();
+	Label runningProcessLabel = new Label();
+	VBox runningProcessBox = new VBox();
+
+	ListView<String> blockedView = new ListView<String>();
+	ObservableList<String> blockedList = FXCollections.observableArrayList();
+	Label blockedLabel = new Label();
+	VBox blockedBox = new VBox();
 
 	private ChangeListener<String> selectionListener = new ChangeListener<String>() {
 		public void changed(ObservableValue<? extends String> ov, String old_val, String new_val) {
@@ -54,8 +64,8 @@ public class DispatcherGUI extends Application {
 				String PIDstring = new_val.substring(0, new_val.indexOf(" "));
 				int PID = Integer.parseInt(PIDstring);
 				selectedProcess = dispatcher.getByPID(PID);
-				selectedProcessText.setAll(selectedProcess.stringArray());
-				selectedProcessView.setItems(selectedProcessText);
+				selectedProcessList.setAll(selectedProcess.stringArray());
+				selectedProcessView.setItems(selectedProcessList);
 			}
 		}
 	};
@@ -70,22 +80,26 @@ public class DispatcherGUI extends Application {
 
 			ListView<String> view = new ListView<String>();
 			ObservableList<String> list = FXCollections.observableArrayList();
-			Label label = new Label();
+			Label label1 = new Label();
+			Label label2 = new Label();
 			VBox box = new VBox();
 
 			box.setPrefSize(175, 300);
-			label.setFont(Font.font("Arial", 14));
-			label.setText("PID - name (priority = 0)");
+			label1.setFont(Font.font("Arial", 14));
+			label2.setFont(Font.font("Arial", 14));
+			label1.setText("Priority = " + i);
+			label2.setText("PID - name");
 
 			list.addAll(((ProcessQueue) queueArray[i]).stringArray());
 			view.setItems(list);
 			view.getSelectionModel().selectedItemProperty().addListener(selectionListener);
 
-			box.getChildren().addAll(label, view);
+			box.getChildren().addAll(label1, label2, view);
 
 			queueViews.put(i, view);
 			queueLists.put(i, list);
-			queueLabels.put(i, label);
+			queueLabels1.put(i, label1);
+			queueLabels2.put(i, label2);
 			queueBoxes.put(i, box);
 			grid.add(box, i, 1);
 		}
@@ -94,6 +108,11 @@ public class DispatcherGUI extends Application {
 		selectedProcessLabel.setText("Selected Process");
 		selectedProcessBox.setPrefSize(175, 175);
 
+		runningProcessLabel.setAlignment(Pos.CENTER);
+		runningProcessLabel.setFont(Font.font("Arial", 14));
+		runningProcessLabel.setText("Running Process");
+		runningProcessBox.setPrefSize(175, 175);
+
 		blockedLabel.setAlignment(Pos.CENTER);
 		blockedLabel.setFont(Font.font("Arial", 14));
 		blockedLabel.setText("Blocked Processes");
@@ -101,6 +120,17 @@ public class DispatcherGUI extends Application {
 		blockedBox.getChildren().addAll(blockedLabel, blockedView);
 		blockedView.getSelectionModel().selectedItemProperty().addListener(selectionListener);
 		grid.add(blockedBox, (maxPriority + 1), 1);
+
+	}
+
+	private void refreshRunningView() {
+		runningProcess = dispatcher.getActiveProcess();
+		runningProcessView.setItems(null);
+
+		if (runningProcess != null) {
+			runningProcessList.setAll(runningProcess.stringArray());
+			runningProcessView.setItems(runningProcessList);
+		}
 	}
 
 	private void refresh() {
@@ -109,13 +139,18 @@ public class DispatcherGUI extends Application {
 		for (int i = 0; i <= maxPriority; i++) {
 			ListView<String> view = queueViews.get(i);
 			ObservableList<String> list = queueLists.get(i);
-			Label label = queueLabels.get(i);
+			Label label1 = queueLabels1.get(i);
+			Label label2 = queueLabels2.get(i);
 			VBox box = queueBoxes.get(i);
 
 			list.setAll(((ProcessQueue) queueArray[i]).stringArray());
 			view.setItems(list);
-			box.getChildren().setAll(label, view);
+			box.getChildren().setAll(label1, label2, view);
 		}
+		blockedList.setAll(dispatcher.getBlockList());
+		blockedView.setItems(blockedList);
+
+		refreshRunningView();
 	}
 
 	@Override
@@ -127,17 +162,109 @@ public class DispatcherGUI extends Application {
 		grid.setPadding(new Insets(25, 25, 25, 25));
 		grid.setGridLinesVisible(false);
 
-		Button terminateButton = new Button("Terminate");
-		terminateButton.setOnAction(new EventHandler<ActionEvent>() {
+		final TextField createPriority = new TextField();
+		final TextField createName = new TextField();
+
+		Button createNewProcessButton = new Button("Create New Process");
+		createNewProcessButton.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				dispatcher.killProcess(selectedProcess);
-				selectedProcessView.setItems(null);
+				String newPriority = createPriority.getText();
+				String newName = createName.getText();
+
+				newPriority = newPriority.trim();
+				newName = newName.trim();
+
+				if ((newPriority.length() != 0) && (newName.length() != 0)) {
+					dispatcher.createProcess(Integer.parseInt(newPriority), newName);
+				} else if (newPriority.length() != 0) {
+					dispatcher.createProcess(Integer.parseInt(newPriority));
+				} else if (newName.length() != 0) {
+					dispatcher.createProcess(0, newName);
+				} else {
+					dispatcher.createProcess();
+				}
 				refresh();
 			}
 		});
 
-		selectedProcessBox.getChildren().addAll(selectedProcessLabel, selectedProcessView, terminateButton);
+		Button interruptButton = new Button("Interrupt");
+		interruptButton.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				if (runningProcess != null) {
+					dispatcher.queueProcess(runningProcess);
+					runningProcess = null;
+					refresh();
+				}
+			}
+		});
+
+		Button unblockButton = new Button("Unblock");
+		unblockButton.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				if (selectedProcess != null) {
+					if (selectedProcess.getState() == State.BLOCKED) {
+						dispatcher.queueProcess(selectedProcess);
+						refresh();
+					}
+				}
+			}
+		});
+
+		Button blockButton = new Button("Block");
+		blockButton.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				if (runningProcess != null) {
+					dispatcher.blockProcess(runningProcess);
+					runningProcess = null;
+					refresh();
+				}
+			}
+		});
+
+		Button terminateButton = new Button("Terminate");
+		terminateButton.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent event) {
+				if (runningProcess != null) {
+					dispatcher.killProcess(selectedProcess);
+					selectedProcessView.setItems(null);
+					refresh();
+				}
+			}
+		});
+
+		GridPane createArea = new GridPane();
+		createArea.setHgap(10);
+		createArea.setVgap(10);
+
+		Text createHint = new Text("Priority and name are optional");
+		createArea.add(createHint, 0, 0, 2, 1);
+
+		Label createPriorityLabel = new Label();
+		createPriorityLabel.setText("Priority:");
+		createArea.add(createPriorityLabel, 0, 2);
+		createArea.add(createPriority, 0, 3);
+
+		Label createNameLabel = new Label();
+		createNameLabel.setText("Process name:");
+		createArea.add(createNameLabel, 1, 2);
+		createArea.add(createName, 1, 3);
+
+		createArea.add(createNewProcessButton, 0, 4, 2, 1);
+
+		grid.add(createArea, 1, 0, 2, 1);
+
+		HBox runningButtons = new HBox();
+		runningButtons.getChildren().addAll(interruptButton, blockButton);
+
+		HBox selectButtons = new HBox();
+		selectButtons.getChildren().addAll(terminateButton, unblockButton);
+
+		selectedProcessBox.getChildren().addAll(selectedProcessLabel, selectedProcessView, selectButtons);
 		grid.add(selectedProcessBox, 3, 0);
+		runningProcessBox.getChildren().addAll(runningProcessLabel, runningProcessView, runningButtons);
+		grid.add(runningProcessBox, 0, 0);
+
+		refresh();
 
 		Scene scene = new Scene(grid, 800, 600);
 

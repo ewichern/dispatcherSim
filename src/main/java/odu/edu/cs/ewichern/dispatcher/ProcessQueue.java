@@ -78,8 +78,8 @@ public class ProcessQueue implements Iterable<Process>{
 	
 	public ArrayList<String> stringArray() {
 		ArrayList<String> output = new ArrayList<String>();
-		for (Process proc : processQueue) {
-			output.add(proc.getPID() + " - " + proc.getName());
+		for (Process p : processQueue) {
+			output.add(p.shortString());
 		}
 		return output;
 	}

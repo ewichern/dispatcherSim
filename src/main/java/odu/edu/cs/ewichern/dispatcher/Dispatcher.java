@@ -31,62 +31,91 @@ public class Dispatcher {
 	public int getMaxPriority() {
 		return maxPriority;
 	}
-	
+
 	public Object[] queueArray() {
 		return priorityQueues.toArray();
 	}
-	
+
 	public Object[] blockedArray() {
 		return blockedList.toArray();
+	}
+
+	public ArrayList<String> getBlockList() {
+		ArrayList<String> output = new ArrayList<String>();
+		for (Process p : blockedList) {
+			output.add(p.shortString());
+		}
+		return output;
 	}
 
 	public Object[] terminatedArray() {
 		return terminatedList.toArray();
 	}
-	
+
+	public ArrayList<String> getTerminated() {
+		ArrayList<String> output = new ArrayList<String>();
+		for (Process p : terminatedList) {
+			output.add(p.shortString());
+		}
+		return output;
+	}
+
 	public Process getActiveProcess() {
 		return activeProcess;
 	}
-	
+
 	public Process getByPID(int PID) {
 		return processList.get(PID);
 	}
-	
-	public void createProcess(int priorityInput, String nameInput) {
+
+	public void createProcess() {
 		Process temp;
-		
-		if (priorityInput >= 0 && priorityInput <= maxPriority) {
-			temp = priorityQueues.get(priorityInput).createProcess(nameInput);
-			processList.put(temp.getPID(), temp);
-		} else {
-			throw new IndexOutOfBoundsException("Invalid priority level.");
-		}
-		
+
+		temp = priorityQueues.get(0).createProcess();
+		processList.put(temp.getPID(), temp);
 		runNextProcess();
 	}
-	
+
 	public void createProcess(int priorityInput) {
 		Process temp;
-		
+
 		if (priorityInput >= 0 && priorityInput <= maxPriority) {
 			temp = priorityQueues.get(priorityInput).createProcess();
 			processList.put(temp.getPID(), temp);
 		} else {
 			throw new IndexOutOfBoundsException("Invalid priority level.");
 		}
-		
+
 		runNextProcess();
 	}
-	
+
+	public void createProcess(int priorityInput, String nameInput) {
+		Process temp;
+
+		if (priorityInput >= 0 && priorityInput <= maxPriority) {
+			temp = priorityQueues.get(priorityInput).createProcess(nameInput);
+			processList.put(temp.getPID(), temp);
+		} else {
+			throw new IndexOutOfBoundsException("Invalid priority level.");
+		}
+
+		runNextProcess();
+	}
+
 	public boolean queueProcess(Process process) {
-		process.setState(State.READY);
 		int processPriority = process.getPriority();
 		boolean success = false;
+
+		if (process.getState() == State.BLOCKED) {
+			blockedList.remove(process);
+		}
 
 		if (activeProcess == process) {
 			activeProcess = null;
 		}
-		
+
+		process.setState(State.READY);
+
 		if (processPriority >= 0 && processPriority <= maxPriority) {
 			success = priorityQueues.get(processPriority).addProcess(process);
 			// processList.add(process);
@@ -134,8 +163,11 @@ public class Dispatcher {
 
 	private void runNextProcess() {
 		for (ProcessQueue queue : priorityQueues) {
-			if (activeProcess == null)
+			if (activeProcess == null) {
 				activeProcess = queue.getNextProcess();
+			} else {
+				activeProcess.setState(State.RUNNING);
+			}
 		}
 	}
 
@@ -144,7 +176,5 @@ public class Dispatcher {
 		return "Dispatcher [maxPriority=" + maxPriority + ", priorityQueues=" + priorityQueues + ", blockedList="
 				+ blockedList + ", terminatedList=" + terminatedList + ", runningProcess=" + activeProcess + "]";
 	}
-	
-	
 
 }

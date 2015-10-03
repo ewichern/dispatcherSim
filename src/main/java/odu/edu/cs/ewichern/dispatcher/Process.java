@@ -140,6 +140,10 @@ public class Process {
 		output[3] = "Name = " + name;
 		return output;
 	}
+	
+	public String shortString() {
+		return PID + " - " + name;
+	}
 
 	@Override
 	public String toString() {
