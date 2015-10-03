@@ -1,12 +1,9 @@
-package odu.edu.cs.ewichern.dispatcher;
+package edu.odu.cs.ewichern.dispatcher;
 
-import java.util.ArrayList;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -19,6 +16,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -28,16 +26,16 @@ import javafx.scene.text.Text;
 public class DispatcherGUI extends Application {
 
 	GridPane grid = new GridPane();
-	private static int PRIORITY_LEVELS = 4;
-	private static int NUM_FILL_PROCESSESS = 3;
+	private static int PRIORITY_LEVELS = 3;
+	private static int NUM_FILL_PROCESSESS = 2;
 	private static Dispatcher dispatcher = new Dispatcher(PRIORITY_LEVELS);
 	private static int maxPriority = dispatcher.getMaxPriority();
-	private static Object[] queueArray;
-	private static SortedMap<Integer, ListView<String>> queueViews = new TreeMap<Integer, ListView<String>>();
-	private static SortedMap<Integer, ObservableList<String>> queueLists = new TreeMap<Integer, ObservableList<String>>();
-	private static SortedMap<Integer, Label> queueLabels1 = new TreeMap<Integer, Label>();
-	private static SortedMap<Integer, Label> queueLabels2 = new TreeMap<Integer, Label>();
-	private static SortedMap<Integer, VBox> queueBoxes = new TreeMap<Integer, VBox>();
+	Object[] queueArray;
+	SortedMap<Integer, ListView<String>> queueViews = new TreeMap<Integer, ListView<String>>();
+	SortedMap<Integer, ObservableList<String>> queueLists = new TreeMap<Integer, ObservableList<String>>();
+	SortedMap<Integer, Label> queueLabels1 = new TreeMap<Integer, Label>();
+	SortedMap<Integer, Label> queueLabels2 = new TreeMap<Integer, Label>();
+	SortedMap<Integer, VBox> queueBoxes = new TreeMap<Integer, VBox>();
 
 	Process selectedProcess;
 	ListView<String> selectedProcessView = new ListView<String>();
@@ -56,12 +54,26 @@ public class DispatcherGUI extends Application {
 	Label blockedLabel = new Label();
 	VBox blockedBox = new VBox();
 
-	private ChangeListener<String> selectionListener = new ChangeListener<String>() {
-		public void changed(ObservableValue<? extends String> ov, String old_val, String new_val) {
-			System.err.println(old_val + " " + new_val);
-			if (new_val != null) {
-				new_val.trim();
-				String PIDstring = new_val.substring(0, new_val.indexOf(" "));
+//	private ChangeListener<String> selectionListener = new ChangeListener<String>() {
+//		public void changed(ObservableValue<? extends String> ov, String old_val, String new_val) {
+//			System.err.println(old_val + " " + new_val);
+//			if (new_val != null) {
+//				new_val.trim();
+//				String PIDstring = new_val.substring(0, new_val.indexOf(" "));
+//				int PID = Integer.parseInt(PIDstring);
+//				selectedProcess = dispatcher.getByPID(PID);
+//				selectedProcessList.setAll(selectedProcess.stringArray());
+//				selectedProcessView.setItems(selectedProcessList);
+//			}
+//		}
+//	};
+
+	private EventHandler<MouseEvent> clickHandler = new EventHandler<MouseEvent>() {
+		public void handle(MouseEvent event) {
+			ListView<String> s = (ListView<String>) event.getSource();
+			String sourceValue = s.getSelectionModel().getSelectedItem();
+			if (sourceValue != null) {
+				String PIDstring = sourceValue.substring(0, sourceValue.indexOf(" "));
 				int PID = Integer.parseInt(PIDstring);
 				selectedProcess = dispatcher.getByPID(PID);
 				selectedProcessList.setAll(selectedProcess.stringArray());
@@ -73,9 +85,9 @@ public class DispatcherGUI extends Application {
 	public void init() {
 		for (int i = 0; i <= maxPriority; i++) {
 			System.out.println(i);
-			for (int j = 0; j < NUM_FILL_PROCESSESS; j++) {
-				dispatcher.createProcess(i);
-			}
+//			for (int j = 0; j < NUM_FILL_PROCESSESS; j++) {
+//				dispatcher.createProcess(i);
+//			}
 			queueArray = dispatcher.queueArray();
 
 			ListView<String> view = new ListView<String>();
@@ -92,7 +104,7 @@ public class DispatcherGUI extends Application {
 
 			list.addAll(((ProcessQueue) queueArray[i]).stringArray());
 			view.setItems(list);
-			view.getSelectionModel().selectedItemProperty().addListener(selectionListener);
+			view.setOnMouseClicked(clickHandler);
 
 			box.getChildren().addAll(label1, label2, view);
 
@@ -118,7 +130,7 @@ public class DispatcherGUI extends Application {
 		blockedLabel.setText("Blocked Processes");
 		blockedBox.setPrefSize(175, 300);
 		blockedBox.getChildren().addAll(blockedLabel, blockedView);
-		blockedView.getSelectionModel().selectedItemProperty().addListener(selectionListener);
+		blockedView.setOnMouseClicked(clickHandler);
 		grid.add(blockedBox, (maxPriority + 1), 1);
 
 	}
@@ -224,7 +236,7 @@ public class DispatcherGUI extends Application {
 		Button terminateButton = new Button("Terminate");
 		terminateButton.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent event) {
-				if (runningProcess != null) {
+				if (selectedProcess != null) {
 					dispatcher.killProcess(selectedProcess);
 					selectedProcessView.setItems(null);
 					refresh();
@@ -236,8 +248,14 @@ public class DispatcherGUI extends Application {
 		createArea.setHgap(10);
 		createArea.setVgap(10);
 
-		Text createHint = new Text("Priority and name are optional");
-		createArea.add(createHint, 0, 0, 2, 1);
+		Label createNewLabel = new Label();
+		createNewLabel.setText("Create a new process here");
+		createNewLabel.setFont(Font.font("Arial", 14));
+		createArea.add(createNewLabel, 0, 0, 2, 1);
+
+		Text createHint = new Text("(Priority and name are optional)");
+		createHint.setFont(Font.font("Arial", 12));
+		createArea.add(createHint, 0, 1, 2, 1);
 
 		Label createPriorityLabel = new Label();
 		createPriorityLabel.setText("Priority:");

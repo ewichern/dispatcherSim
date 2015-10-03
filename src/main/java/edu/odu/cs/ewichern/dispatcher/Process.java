@@ -1,4 +1,4 @@
-package odu.edu.cs.ewichern.dispatcher;
+package edu.odu.cs.ewichern.dispatcher;
 
 /**
  * A simulated process.

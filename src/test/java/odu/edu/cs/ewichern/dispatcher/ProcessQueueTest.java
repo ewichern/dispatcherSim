@@ -4,6 +4,10 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import static org.junit.Assert.*;
+
+import edu.odu.cs.ewichern.dispatcher.Process;
+import edu.odu.cs.ewichern.dispatcher.ProcessQueue;
+
 import static org.hamcrest.CoreMatchers.*;
 
 /**

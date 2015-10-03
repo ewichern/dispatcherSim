@@ -1,5 +1,7 @@
 package odu.edu.cs.ewichern.dispatcher;
 
+import edu.odu.cs.ewichern.dispatcher.Process;
+import edu.odu.cs.ewichern.dispatcher.State;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

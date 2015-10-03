@@ -1,4 +1,4 @@
-package odu.edu.cs.ewichern.dispatcher;
+package edu.odu.cs.ewichern.dispatcher;
 
 import java.util.ArrayList;
 import java.util.SortedMap;
@@ -128,11 +128,13 @@ public class Dispatcher {
 	}
 
 	public boolean killProcess(Process process) {
-		process.setState(State.TERMINATED);
 		int processPriority = process.getPriority();
-		terminatedList.add(process);
 		boolean success = false;
 
+		if(process.getState() == State.BLOCKED) {
+			blockedList.remove(process);
+		}
+		
 		if (activeProcess == process) {
 			activeProcess = null;
 			success = true;
@@ -140,6 +142,9 @@ public class Dispatcher {
 			success = priorityQueues.get(processPriority).removeProcess(process);
 		}
 
+		process.setState(State.TERMINATED);
+		terminatedList.add(process);
+		
 		runNextProcess();
 		return success;
 	}

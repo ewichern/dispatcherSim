@@ -1,7 +1,7 @@
 /**
  * 
  */
-package odu.edu.cs.ewichern.dispatcher;
+package edu.odu.cs.ewichern.dispatcher;
 
 /**
  * Current status of a process object.
